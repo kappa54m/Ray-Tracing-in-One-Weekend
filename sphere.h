@@ -7,7 +7,7 @@ class Sphere : public Hittable {
 public:
     Sphere(const point3& center, double radius) : center(center), radius(radius) {}
 
-    bool hit(const Ray& r, double ray_tmin, double ray_tmax, HitRecord& rec) const override {
+    bool hit(const Ray& r, Interval ray_t, HitRecord& rec) const override {
         vec3 oc = r.origin() - center;
         double a = dot(r.direction(), r.direction());
         double b = 2.0 * dot(oc, r.direction());
@@ -19,9 +19,9 @@ public:
         double sqrtd = sqrt(d);
 
         double t = (-b - sqrtd) / (2 * a);
-        if (t < ray_tmin || t > ray_tmax) {
+        if (t < ray_t.min || t > ray_t.max) {
             t = (-b + sqrtd) / (2 * a);
-            if (t < ray_tmin || t > ray_tmax)
+            if (t < ray_t.min || t > ray_t.max)
                 return false;
         }
 

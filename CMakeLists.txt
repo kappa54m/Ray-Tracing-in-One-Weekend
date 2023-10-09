@@ -5,4 +5,4 @@ project(RayTracing1Wknd LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(RayTracing1Wknd main.cpp vec3.h color.h ray.h hittable.h sphere.h hittable_list.h common.h)
+add_executable(RayTracing1Wknd main.cpp vec3.h color.h ray.h camera.h hittable.h sphere.h hittable_list.h interval.h common.h)
