@@ -55,17 +55,26 @@ private:
         return Ray(m_center, pixel_samp - m_center);
     }
 
-    color _ray_color(const Ray& r, const Hittable& world) const {
+    color _ray_color(const Ray& r, const Hittable& world, int depth) const {
+        if (depth > m_max_depth)
+            return color(0, 0, 0);
+
         HitRecord rec;
-        if (world.hit(r, Interval(0.0, infinity), rec)) {
-            return 0.5 * (color(1.0, 1.0, 1.0) + rec.normal);
-        } else {
+        if (world.hit(r, Interval(0.001, infinity), rec)) {
+            // Bounce back 50%
+            vec3 bounce_dir = random_vec3_on_hemisphere(rec.normal);
+            return 0.5 * _ray_color(Ray(rec.p, bounce_dir), world, depth+1);
+        } else { // Nothing hit
             vec3 unit_dir = unit_vector(r.direction());
             double a = 0.5 * (unit_dir.y() + 1.0);
             color white(1.0, 1.0, 1.0);
             color blue(0.5, 0.7, 1.0);
             return a * blue + (1 - a) * white;
         }
+    }
+
+    color _ray_color(const Ray& r, const Hittable& world) const {
+        return _ray_color(r, world, 0);
     }
 
     void _update_image_height() {
@@ -82,6 +91,7 @@ private:
     // Pixel delta u, v
     vec3 m_vp_du;
     vec3 m_vp_dv;
+    int m_max_depth = 10;
 
     int m_samples_per_pixel = 4;
 public:
@@ -93,22 +103,26 @@ public:
         return true;
     }
     bool set_aspect_ratio(double v) {
-        if (v < 0)
-            return false;
+        if (v < 0) return false;
         m_aspect_ratio = v;
         _update_image_height();
         return true;
     }
     bool set_samples_per_pixel(int v) {
-        if (v < 1)
-            return false;
+        if (v < 1) return false;
         m_samples_per_pixel = v;
+        return true;
+    }
+    bool set_max_depth(int d) {
+        if (d < 1) return false;
+        m_max_depth = d;
+        return true;
     }
 
     int get_image_width() const { return m_image_width; }
     int get_image_height() const { return m_image_height; }
-
     double get_aspect_ratio() const { return m_aspect_ratio; }
+    int get_max_depth() const { return m_max_depth; }
 };
 
 #endif // CAMERA_H

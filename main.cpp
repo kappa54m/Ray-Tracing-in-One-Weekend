@@ -23,13 +23,6 @@ color ray_color(const Ray& r, const Hittable& world) {
 
 int main()
 {
-    // Image
-    double aspect_ratio = 16.0 / 9.0; // ideal ratio
-
-    int image_width = 400;
-    int image_height = static_cast<int>(image_width / aspect_ratio);
-    image_height = (image_height < 1) ? 1 : image_height;
-
     // World
     HittableList world;
 
@@ -41,6 +34,7 @@ int main()
     cam.set_aspect_ratio(16.0 / 9.0);
     cam.set_image_width(400);
     cam.set_samples_per_pixel(100);
+    //cam.set_max_depth(50);
 
     // Output .ppm image
     cam.render(std::cout, world);

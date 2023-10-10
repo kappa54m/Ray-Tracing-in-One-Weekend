@@ -34,4 +34,30 @@ inline double random_double(double min, double max) {
 #include "vec3.h"
 #include "color.h"
 
+vec3 random_vec3() {
+    return vec3(random_double(), random_double(), random_double());
+}
+
+vec3 random_vec3(double min, double max) {
+    return vec3(random_double(min, max), random_double(min, max), random_double(min, max));
+}
+
+vec3 random_nonzero_vec3_inside_unit_sphere() {
+    while (true) {
+        vec3 r = random_vec3(-1, 1);
+        auto len_sqr = r.length_squared();
+        if (len_sqr < 1 && len_sqr > 0.0001)
+            return r;
+    }
+}
+
+vec3 random_unit_vector() {
+    return unit_vector(random_nonzero_vec3_inside_unit_sphere());
+}
+
+vec3 random_vec3_on_hemisphere(const vec3& normal) {
+    vec3 v = random_unit_vector();
+    return dot(v, normal) > 0.0 ? v : -v;
+}
+
 #endif // COMMON_H
