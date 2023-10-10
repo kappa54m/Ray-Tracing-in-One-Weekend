@@ -37,15 +37,22 @@ private:
         for (int j = 0; j < m_image_height; j++) {
             std::clog << "\rScanlines remaining: " << (m_image_height - j) << ' ' << std::flush;
             for (int i = 0; i < m_image_width; i++) {
-                point3 pixel_center = m_pixel00_loc + (i * m_vp_du) + (j * m_vp_dv);
-                vec3 Ray_dir = pixel_center - m_center;
-                Ray r(m_center, Ray_dir);
+                color pixel_col(0.0, 0.0, 0.0);
+                for (int i_samp = 0; i_samp < m_samples_per_pixel; i_samp++) {
+                    Ray r = _sample_ray(i, j);
+                    pixel_col += _ray_color(r, world);
+                }
 
-                color pixel_col = _ray_color(r, world);
-                write_color(ostream, pixel_col);
+                write_color(ostream, pixel_col, m_samples_per_pixel);
             }
         }
         std::clog << "\rDone.             \n";
+    }
+
+    Ray _sample_ray(int i, int j) {
+        point3 pixel_center = m_pixel00_loc + (i * m_vp_du) + (j * m_vp_dv);
+        point3 pixel_samp = pixel_center + ((-0.5 + random_double()) * m_vp_du) + ((-0.5 + random_double()) * m_vp_dv);
+        return Ray(m_center, pixel_samp - m_center);
     }
 
     color _ray_color(const Ray& r, const Hittable& world) const {
@@ -76,6 +83,7 @@ private:
     vec3 m_vp_du;
     vec3 m_vp_dv;
 
+    int m_samples_per_pixel = 4;
 public:
     bool set_image_width(int w) {
         if (w < 0)
@@ -90,6 +98,11 @@ public:
         m_aspect_ratio = v;
         _update_image_height();
         return true;
+    }
+    bool set_samples_per_pixel(int v) {
+        if (v < 1)
+            return false;
+        m_samples_per_pixel = v;
     }
 
     int get_image_width() const { return m_image_width; }

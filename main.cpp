@@ -40,6 +40,7 @@ int main()
     Camera cam;
     cam.set_aspect_ratio(16.0 / 9.0);
     cam.set_image_width(400);
+    cam.set_samples_per_pixel(100);
 
     // Output .ppm image
     cam.render(std::cout, world);
