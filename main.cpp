@@ -36,7 +36,7 @@ int main()
     // Ground
     world.add(make_shared<Sphere>(point3(0.0, -100.5, -1.0), 100.0, yellow_diffuse));
     // Center
-    world.add(make_shared<Sphere>(point3(0.0, 0.0, -1.0), 0.5, dielectric));
+    world.add(make_shared<Sphere>(point3(0.0, 0.0, -1.0), 0.5, dielectric));  // Set negative radius for hollow glass sphere
     // Left
     world.add(make_shared<Sphere>(point3(-1.0, 0.0, -1.0), 0.5, clear_metal));
     // Right

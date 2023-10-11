@@ -63,12 +63,28 @@ public:
     Dielectric(double index_of_refraction) : m_ir(index_of_refraction) {}
 
     bool scatter(const Ray& r_in, const HitRecord& hit, color& attenuation, Ray& scattered) const override {
-        attenuation = color(1.0, 1.0, 1.0);
+        attenuation = color(1.0, 1.0, 1.0);  // Perfect glass
         auto refraction_ratio = hit.front_face ? 1.0/m_ir : m_ir/1.0;
 
-        vec3 refracted = refract(unit_vector(r_in.direction()), hit.normal, refraction_ratio);
-        scattered = Ray(hit.p, refracted);
+        vec3 ray_dir_unit = unit_vector(r_in.direction());
+        double cos_theta = fmin(dot(-ray_dir_unit, hit.normal), 1.0);
+        double sin_theta = sqrt(1 - cos_theta * cos_theta);
+
+        vec3 direction;
+        if (refraction_ratio * sin_theta > 1.0  // Over critical angle
+                || _schlick_approximation(cos_theta, refraction_ratio) > random_double())
+            direction = reflect(ray_dir_unit, hit.normal);
+        else
+            direction = refract(ray_dir_unit, hit.normal, refraction_ratio);
+        scattered = Ray(hit.p, direction);
         return true;
+    }
+
+private:
+    static double _schlick_approximation(double cosine, double ref_idx) {
+        auto r0 = (1 - ref_idx) / (1 + ref_idx);
+        r0 = r0 * r0;
+        return r0 + (1 - r0) * pow((1 - cosine), 5);
     }
 private:
     double m_ir;
