@@ -1,14 +1,14 @@
 #ifndef HITTABLE_H
 #define HITTABLE_H
 
-#include "vec3.h"
-#include "ray.h"
+#include "common.h"
 #include "interval.h"
 
 class HitRecord {
 public:
     point3 p;
     vec3 normal;
+    shared_ptr<class Material> material;
     double t;
     bool front_face;
 

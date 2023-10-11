@@ -3,6 +3,7 @@
 
 #include "common.h"
 #include "hittable.h"
+#include "material.h"
 
 #include <iostream>
 
@@ -59,15 +60,16 @@ private:
         if (depth > m_max_depth)
             return color(0, 0, 0);
 
-        HitRecord rec;
-        if (world.hit(r, Interval(0.001, infinity), rec)) {
+        HitRecord hit;
+        if (world.hit(r, Interval(0.001, infinity), hit)) {
             // Bounce back 50%
-            vec3 bounce_dir;
-            if (is_lambertian)
-                bounce_dir = rec.normal + random_unit_vector();
-            else
-                bounce_dir = random_vec3_on_hemisphere(rec.normal);
-            return m_reflectance * _ray_color(Ray(rec.p, bounce_dir), world, depth+1);
+            Ray scattered;
+            color attenuation;
+            if (hit.material->scatter(r, hit, attenuation, scattered)) {
+                return attenuation * _ray_color(scattered, world, depth+1);
+            } else {
+                return color(0, 0, 0);
+            }
         } else { // Nothing hit
             vec3 unit_dir = unit_vector(r.direction());
             double a = 0.5 * (unit_dir.y() + 1.0);
@@ -98,9 +100,6 @@ private:
     int m_max_depth = 10;
 
     int m_samples_per_pixel = 4;
-    double m_reflectance = 0.5;
-public:
-    bool is_lambertian = true;
 public:
     bool set_image_width(int w) {
         if (w < 0)
@@ -125,8 +124,6 @@ public:
         m_max_depth = d;
         return true;
     }
-    void set_reflectance(double r) { m_reflectance = r; }
-
     int get_image_width() const { return m_image_width; }
     int get_image_height() const { return m_image_height; }
     double get_aspect_ratio() const { return m_aspect_ratio; }

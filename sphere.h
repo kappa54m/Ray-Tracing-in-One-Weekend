@@ -5,9 +5,10 @@
 
 class Sphere : public Hittable {
 public:
-    Sphere(const point3& center, double radius) : center(center), radius(radius) {}
+    Sphere(const point3& center, double radius, shared_ptr<Material> material)
+        : center(center), radius(radius), material(material) {}
 
-    bool hit(const Ray& r, Interval ray_t, HitRecord& rec) const override {
+    bool hit(const Ray& r, Interval ray_t, HitRecord& hit) const override {
         vec3 oc = r.origin() - center;
         double a = dot(r.direction(), r.direction());
         double b = 2.0 * dot(oc, r.direction());
@@ -25,16 +26,18 @@ public:
                 return false;
         }
 
-        rec.t = t;
-        rec.p = r.at(t);
-        vec3 outward_normal = (rec.p - center) / radius;
-        rec.set_face_normal(r, outward_normal);
+        hit.t = t;
+        hit.p = r.at(t);
+        vec3 outward_normal = (hit.p - center) / radius;
+        hit.set_face_normal(r, outward_normal);
+        hit.material = material;
 
         return true;
     }
 private:
     point3 center;
     double radius;
+    shared_ptr<Material> material;
 };
 
 #endif // SPHERE_H
