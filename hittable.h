@@ -14,7 +14,7 @@ public:
 
     // Set normal such that it points against incoming ray (r)
     void set_face_normal(const Ray& r, const vec3& outward_normal_unit) {
-        front_face = dot(r.direction(), outward_normal_unit);
+        front_face = dot(r.direction(), outward_normal_unit) < 0.0;
         normal = front_face ? outward_normal_unit : -outward_normal_unit;
     }
 };

@@ -27,15 +27,20 @@ int main()
     // World
     HittableList world;
 
-    auto mat_ground = make_shared<Lambertian>(color(0.8, 0.8, 0.0));
-    auto mat_center = make_shared<Lambertian>(color(0.7, 0.3, 0.3));
-    auto mat_left = make_shared<Metal>(color(0.8, 0.8, 0.8), 0.0);
-    auto mat_right = make_shared<Metal>(color(0.8, 0.6, 0.2), 0.3);
+    auto yellow_diffuse = make_shared<Lambertian>(color(0.8, 0.8, 0.0));
+    auto pink_diffuse = make_shared<Lambertian>(color(0.7, 0.3, 0.3));
+    auto clear_metal = make_shared<Metal>(color(0.8, 0.8, 0.8), 0.0);
+    auto golden_metal = make_shared<Metal>(color(0.8, 0.6, 0.2), 0.3);
+    auto dielectric = make_shared<Dielectric>(1.5);
 
-    world.add(make_shared<Sphere>(point3(0.0, -100.5, -1.0), 100.0, mat_ground));
-    world.add(make_shared<Sphere>(point3(0.0, 0.0, -1.0), 0.5, mat_center));
-    world.add(make_shared<Sphere>(point3(-1.0, 0.0, -1.0), 0.5, mat_left));
-    world.add(make_shared<Sphere>(point3(1.0, 0.0, -1.0), 0.5, mat_right));
+    // Ground
+    world.add(make_shared<Sphere>(point3(0.0, -100.5, -1.0), 100.0, yellow_diffuse));
+    // Center
+    world.add(make_shared<Sphere>(point3(0.0, 0.0, -1.0), 0.5, dielectric));
+    // Left
+    world.add(make_shared<Sphere>(point3(-1.0, 0.0, -1.0), 0.5, clear_metal));
+    // Right
+    world.add(make_shared<Sphere>(point3(1.0, 0.0, -1.0), 0.5, golden_metal));
 
     // Camera
     Camera cam;

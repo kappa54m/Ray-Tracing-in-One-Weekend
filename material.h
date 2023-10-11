@@ -58,4 +58,20 @@ private:
     double m_fuzz;
 };
 
+class Dielectric : public Material {
+public:
+    Dielectric(double index_of_refraction) : m_ir(index_of_refraction) {}
+
+    bool scatter(const Ray& r_in, const HitRecord& hit, color& attenuation, Ray& scattered) const override {
+        attenuation = color(1.0, 1.0, 1.0);
+        auto refraction_ratio = hit.front_face ? 1.0/m_ir : m_ir/1.0;
+
+        vec3 refracted = refract(unit_vector(r_in.direction()), hit.normal, refraction_ratio);
+        scattered = Ray(hit.p, refracted);
+        return true;
+    }
+private:
+    double m_ir;
+};
+
 #endif // MATERIAL_H
