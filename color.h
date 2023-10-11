@@ -9,6 +9,15 @@
 
 using color = vec3;
 
+
+inline double to_gamma_space(double linear_val) {
+    return sqrt(linear_val);
+}
+
+inline color to_gamma_space(color linear_col) {
+    return color(to_gamma_space(linear_col[0]), to_gamma_space(linear_col[1]), to_gamma_space(linear_col[2]));
+}
+
 void write_color(std::ostream& out, color pixel_color, int samples_per_pixel) {
     auto r = pixel_color[0];
     auto g = pixel_color[1];
@@ -21,9 +30,9 @@ void write_color(std::ostream& out, color pixel_color, int samples_per_pixel) {
 
     static const Interval INTENSITY(0.000, 0.999);
     // Write the translated [0,255] value of each color component.
-    out << static_cast<int>(256 * INTENSITY.clamp(r)) << ' '
-        << static_cast<int>(256 * INTENSITY.clamp(g)) << ' '
-        << static_cast<int>(256 * INTENSITY.clamp(b)) << '\n';
+    out << static_cast<int>(256 * INTENSITY.clamp(to_gamma_space(r))) << ' '
+        << static_cast<int>(256 * INTENSITY.clamp(to_gamma_space(g))) << ' '
+        << static_cast<int>(256 * INTENSITY.clamp(to_gamma_space(b))) << '\n';
 }
 
 void write_color(std::ostream& out, color pixel_color) {
