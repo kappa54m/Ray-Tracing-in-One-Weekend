@@ -19,8 +19,7 @@ private:
     void _prepare() {
         m_center = lookfrom;
 
-        double focal_length = (lookfrom - lookat).length();
-        double vp_height = 2.0;
+        double vp_height = 2 * focus_dist * tan(deg2rad(vfov_deg / 2.0));
         double vp_width = vp_height * (static_cast<double>(m_image_width) / m_image_height);
 
         m_cam_z = unit_vector(lookfrom - lookat);
@@ -34,8 +33,12 @@ private:
         m_vp_du = vp_u / static_cast<double>(m_image_width);
         m_vp_dv = vp_v / static_cast<double>(m_image_height);
 
-        vec3 vp_ul = m_center - (focal_length * m_cam_z) - (0.5 * vp_u) - (0.5 * vp_v);
+        vec3 vp_ul = m_center - (focus_dist * m_cam_z) - (0.5 * vp_u) - (0.5 * vp_v);
         m_pixel00_loc = vp_ul + (0.5 * m_vp_du + 0.5 * m_vp_dv);
+
+        double defocus_radius = focus_dist * tan(deg2rad(defocus_angle_deg / 2.0));
+        m_defocus_disk_x = defocus_radius * m_cam_x;
+        m_defocus_disk_y = defocus_radius * m_cam_y;
     }
 
     void _render(std::ostream& ostream, const Hittable& world) {
@@ -59,7 +62,22 @@ private:
     Ray _sample_ray(int i, int j) {
         point3 pixel_center = m_pixel00_loc + (i * m_vp_du) + (j * m_vp_dv);
         point3 pixel_samp = pixel_center + ((-0.5 + random_double()) * m_vp_du) + ((-0.5 + random_double()) * m_vp_dv);
-        return Ray(m_center, pixel_samp - m_center);
+
+        point3 ray_origin = (defocus_angle_deg <= 0) ? m_center : _defocus_disk_sample();
+
+        return Ray(ray_origin, pixel_samp - ray_origin);
+    }
+
+    point3 _defocus_disk_sample() const {
+        vec3 random_in_unit_disk;
+        while (true) {
+            random_in_unit_disk = vec3(random_double(-1.0, 1.0), random_double(-1.0, 1.0), 0.0);
+            if (random_in_unit_disk.length_squared() < 1.0)
+                break;
+        }
+
+        vec3 perturbance = (random_in_unit_disk[0] * m_defocus_disk_x) + (random_in_unit_disk[1] * m_defocus_disk_y);
+        return m_center + (random_in_unit_disk[0] * m_defocus_disk_x) + (random_in_unit_disk[1] * m_defocus_disk_y);
     }
 
     color _ray_color(const Ray& r, const Hittable& world, int depth) const {
@@ -108,11 +126,14 @@ private:
     int m_samples_per_pixel = 4;
 
     vec3 m_cam_x, m_cam_y, m_cam_z; // Camera frame basis vectors
+    vec3 m_defocus_disk_x, m_defocus_disk_y;
 public:
-    double vfov = 90;					// Vertical view angle (field of view; NOT USED FOR NOW)
+    double vfov_deg = 90;					// Vertical view angle (field of view)
     point3 lookfrom = point3(0, 0, -1); // Camera position
     point3 lookat = point3(0, 0, 0);    // Point camera is looking at
     vec3 vup = vec3(0, 1, 0);			// Camera-relative up direction
+    double defocus_angle_deg = 0;  // Radius of cone on the base lying on camera plane from which starting points of rays are sampled
+    double focus_dist = 10;  // Distance from camera lookfrom point to plane of perfect focus
 public:
     bool set_image_width(int w) {
         if (w < 0)
