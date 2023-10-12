@@ -17,18 +17,24 @@ public:
     }
 private:
     void _prepare() {
-        double focal_length = 1.0;
+        m_center = lookfrom;
+
+        double focal_length = (lookfrom - lookat).length();
         double vp_height = 2.0;
         double vp_width = vp_height * (static_cast<double>(m_image_width) / m_image_height);
 
-        vec3 vp_u(vp_width, 0, 0);
-        vec3 vp_v(0, -vp_height, 0);
+        m_cam_z = unit_vector(lookfrom - lookat);
+        m_cam_x = unit_vector(cross(vup, m_cam_z));
+        m_cam_y = cross(m_cam_z, m_cam_x);
+
+        vec3 vp_u = vp_width * m_cam_x;
+        vec3 vp_v = vp_height * -m_cam_y;
 
         // pixel to pixel dist within vp
         m_vp_du = vp_u / static_cast<double>(m_image_width);
         m_vp_dv = vp_v / static_cast<double>(m_image_height);
 
-        vec3 vp_ul = m_center - vec3(0, 0, focal_length) - (0.5 * vp_u) - (0.5 * vp_v);
+        vec3 vp_ul = m_center - (focal_length * m_cam_z) - (0.5 * vp_u) - (0.5 * vp_v);
         m_pixel00_loc = vp_ul + (0.5 * m_vp_du + 0.5 * m_vp_dv);
     }
 
@@ -100,6 +106,13 @@ private:
     int m_max_depth = 10;
 
     int m_samples_per_pixel = 4;
+
+    vec3 m_cam_x, m_cam_y, m_cam_z; // Camera frame basis vectors
+public:
+    double vfov = 90;					// Vertical view angle (field of view; NOT USED FOR NOW)
+    point3 lookfrom = point3(0, 0, -1); // Camera position
+    point3 lookat = point3(0, 0, 0);    // Point camera is looking at
+    vec3 vup = vec3(0, 1, 0);			// Camera-relative up direction
 public:
     bool set_image_width(int w) {
         if (w < 0)

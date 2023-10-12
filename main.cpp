@@ -47,7 +47,10 @@ int main()
     cam.set_aspect_ratio(16.0 / 9.0);
     cam.set_image_width(400);
     cam.set_samples_per_pixel(100);
-    //cam.set_max_depth(50);
+    cam.vfov = 90;
+    cam.lookfrom = point3(-2, 2, 1);
+    cam.lookat = point3(0, 0, -1);
+    cam.vup = vec3(0, 1, 0);
 
     // Output .ppm image
     cam.render(std::cout, world);
